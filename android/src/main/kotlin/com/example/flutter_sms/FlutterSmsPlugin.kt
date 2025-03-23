@@ -28,14 +28,21 @@ class FlutterSmsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         when (call.method) {
             "sendSMS" -> {
                 val message = call.argument<String>("message")
-                val recipients = call.argument<List<String>>("recipients")
+                val recipientsArg = call.argument<Any>("recipients") // เปลี่ยนเป็น Any เพื่อป้องกัน ClassCastException
                 val sendDirect = call.argument<Boolean>("sendDirect") ?: false
+
+                // ตรวจสอบและแปลง recipients
+                val recipients: List<String> = when (recipientsArg) {
+                    is List<*> -> recipientsArg.filterIsInstance<String>()
+                    is String -> listOf(recipientsArg) // ถ้าเป็น String ให้แปลงเป็น List<String>
+                    else -> emptyList()
+                }
 
                 Log.d(TAG, "sendSMS called with sendDirect: $sendDirect, recipients: $recipients")
 
-                if (message == null || recipients == null) {
-                    Log.e(TAG, "Invalid arguments: message or recipients is null")
-                    result.error("INVALID_ARGUMENTS", "Message and recipients cannot be null", null)
+                if (message == null || recipients.isEmpty()) {
+                    Log.e(TAG, "Invalid arguments: message=$message, recipients=$recipients")
+                    result.error("INVALID_ARGUMENTS", "Message and recipients cannot be null or empty", null)
                     return
                 }
 

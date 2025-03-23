@@ -39,6 +39,11 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+
+    // เพิ่มการตั้งค่า JVM target สำหรับ Kotlin
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
 }
 
 dependencies {
